@@ -216,11 +216,21 @@ let products = [];
         }
 
         // UI Helpers
-        function toggleCart() {
-            const modal = document.getElementById('checkout-modal');
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+function toggleCart() {
+            // This searches your HTML for elements ending with "-modal" automatically
+            const modal = document.getElementById('checkout-modal') || 
+                          document.getElementById('cart-modal') || 
+                          document.querySelector('[id*="modal"]');
+            
+            if (!modal) {
+                console.error("Critical UI Error: Could not find your cart/checkout modal element in the HTML.");
+                alert("Could not open checkout drawer. Check the element IDs.");
+                return;
+            }
+            
+            // Toggle view state safely
+            modal.style.display = (modal.style.display === 'flex' || modal.style.display === 'block') ? 'none' : 'flex';
         }
-
         // Initialize store by fetching live database collection items
         fetchLiveProducts();
     </script>
