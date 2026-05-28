@@ -85,10 +85,10 @@
     <script>
        // 🚀 NEW: We start with an empty array and load it from MongoDB instead!
 // 🚀 SAFE FIX: We start with an empty array for database items
-        let products = [];
+let products = [];
         let cart = [];
 
-        // Fetch products live from your database function
+        // 1. Fetch products live from your database function
         async function fetchLiveProducts() {
             const container = document.getElementById('products-container');
             container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888; font-weight: bold;">Loading fresh harvest from database...</div>`;
@@ -111,22 +111,32 @@
             }
         }
 
-        // Display items using the MongoDB unique string ID
-        function displayProducts(items) {
-            const container = document.getElementById('products-container');
-            container.innerHTML = items.map(p => `
-                <div class="product-card">
-                    <img src="${p.img}" class="product-img" alt="${p.name}">
-                    <div class="product-title">${p.name}</div>
-                    <div class="product-price">KWD ${p.price.toFixed(2)}</div>
-                    <button class="add-btn" onclick="addToCart('${p._id}')">Add to Cart</button>
-                </div>
-            `).join('');
+        // 2. Safely extract the ID string whether it's a flat string or a nested MongoDB $oid object
+        function getProductId(p) {
+            if (!p) return '';
+            if (typeof p._id === 'object' && p._id.$oid) return p._id.$oid;
+            if (typeof p._id === 'object' && p._id.toString) return p._id.toString();
+            return p._id || '';
         }
 
-        // Robust category filtering that won't wipe out or lose your database items
+        // 3. Display items using the extracted string ID
+        function displayProducts(items) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = items.map(p => {
+                const pId = getProductId(p);
+                return `
+                    <div class="product-card">
+                        <img src="${p.img}" class="product-img" alt="${p.name}">
+                        <div class="product-title">${p.name}</div>
+                        <div class="product-price">KWD ${Number(p.price).toFixed(2)}</div>
+                        <button class="add-btn" onclick="addToCart('${pId}')">Add to Cart</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 4. Category filtering
         function filterCat(category) {
-            // Safely toggle the active style button class
             document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
             if (window.event && window.event.target) {
                 window.event.target.classList.add('active');
@@ -140,86 +150,78 @@
             }
         }
 
-        // Updated cart addition that guarantees it checks against valid data
+        // 5. Airtight cart addition matching against both string format variants
         function addToCart(id) {
-            const prod = products.find(p => p._id === id);
+            console.log("Attempting to add product with ID:", id);
             
-            // Safety Check: If it can't find it, stop immediately instead of crashing
+            const prod = products.find(p => getProductId(p) === id);
+            
             if (!prod) {
-                console.error("Could not find product matching ID:", id);
+                console.error("Critical: Could not find product matching ID:", id, "Available products:", products);
+                alert("Error adding item to cart. Check browser console logs.");
                 return;
             }
             
             cart.push(prod);
             
-            // Calculate the total safely
-            const total = cart.reduce((sum, p) => sum + (p.price || 0), 0);
-            document.getElementById('cart-total').innerText = total.toFixed(2);
-        }
-        function filterCat(category) {
-            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            if(category === 'all') return displayProducts(products);
-            displayProducts(products.filter(p => p.cat === category));
-        }
-
-        function addToCart(id) {
-            const prod = products.find(p => p.id === id);
-            cart.push(prod);
-            const total = cart.reduce((sum, p) => sum + p.price, 0);
+            // Calculate total safely forcing numbers
+            const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
             document.getElementById('cart-total').innerText = total.toFixed(2);
         }
 
-        function openCheckout() {
-            if(cart.length === 0) return alert("Your basket is empty!");
-            const total = cart.reduce((sum, p) => sum + p.price, 0);
-            document.getElementById('modal-summary').innerText = `Total Items: ${cart.length} | Amount Due: KWD ${total.toFixed(2)}`;
-            document.getElementById('checkoutModal').style.display = 'flex';
+        // 6. Checkout flow passing items to order payload
+        async function submitOrder() {
+            const name = document.getElementById('custName').value;
+            const phone = document.getElementById('custPhone').value;
+            const address = document.getElementById('custAddress').value;
+
+            if (!name || !phone || !address) {
+                return alert("Please fill out all delivery details.");
+            }
+
+            if (cart.length === 0) {
+                return alert("Your basket is empty!");
+            }
+
+            const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
+
+            const orderPayload = {
+                customerName: name,
+                phone: phone,
+                address: address,
+                items: cart.map(p => ({ name: p.name, price: Number(p.price) })),
+                total: total,
+                status: "Pending"
+            };
+
+            try {
+                const response = await fetch('/.netlify/functions/placeOrder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderPayload)
+                });
+
+                if (response.ok) {
+                    alert("Order placed successfully! Check your MongoDB database.");
+                    cart = [];
+                    document.getElementById('cart-total').innerText = "0.00";
+                    toggleCart(); // Close modal
+                } else {
+                    alert("Failed to submit order. Try again.");
+                }
+            } catch (error) {
+                console.error("Order submission failure:", error);
+                alert("Network error. Could not connect to order server.");
+            }
         }
 
-        function closeCheckout() { document.getElementById('checkoutModal').style.display = 'none'; }
-
-async function submitOrder() {
-    const custName = document.getElementById('custName').value;
-    const custPhone = document.getElementById('custPhone').value;
-    const custAddress = document.getElementById('custAddress').value;
-
-    if(!custName || !custPhone || !custAddress) return alert("Please fill out all delivery details.");
-
-    // Structure the order exactly how your system expects it
-    const newOrder = {
-        customerName: custName,
-        phone: custPhone,
-        address: custAddress,
-        items: cart,
-        total: cart.reduce((sum, p) => sum + p.price, 0)
-    };
-
-    try {
-        // Send the data directly to your new live database function
-        const response = await fetch('/.netlify/functions/placeOrder', {
-            method: 'POST',
-            body: JSON.stringify(newOrder)
-        });
-
-        if (response.ok) {
-            alert("Order placed successfully! Check your MongoDB database.");
-            cart = [];
-            document.getElementById('cart-total').innerText = "0.00";
-            document.getElementById('custName').value = '';
-            document.getElementById('custPhone').value = '';
-            document.getElementById('custAddress').value = '';
-            closeCheckout();
-        } else {
-            alert("There was a problem saving your order. Please try again.");
+        // UI Helpers
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
         }
-    } catch (error) {
-        console.error("Error connecting to server:", error);
-        alert("Failed to connect to the cloud database server.");
-    }
-}
 
-        // Initialize store
+        // Initialize store by fetching live database collection items
         fetchLiveProducts();
     </script>
 </body>
