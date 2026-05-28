@@ -149,18 +149,36 @@
                 status: 'Pending'
             };
 
-            // Using the new LocalRoot storage key
-            let savedOrders = JSON.parse(localStorage.getItem('localRoot_orders')) || [];
-            savedOrders.unshift(newOrder);
-            localStorage.setItem('localRoot_orders', JSON.stringify(savedOrders));
+            async function placeOrder() {
+    if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
 
-            alert("Order placed successfully! Check the LocalRoot Admin Dashboard.");
-            cart = [];
-            document.getElementById('cart-total').innerText = "0.00";
-            document.getElementById('custName').value = '';
-            document.getElementById('custPhone').value = '';
-            document.getElementById('custAddress').value = '';
-            closeCheckout();
+    const orderData = {
+        items: cart,
+        total: cartTotal // Make sure this matches your total variable name
+    };
+
+    try {
+        // This calls your new Netlify backend function!
+        const response = await fetch('/.netlify/functions/placeOrder', {
+            method: 'POST',
+            body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+            alert("Order placed successfully!");
+            cart = []; // Clear the cart
+            updateCartUI(); // Update your cart display
+        } else {
+            alert("There was an issue placing your order.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Failed to connect to the server.");
+    }
+}
         }
 
         // Initialize store
