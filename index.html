@@ -64,7 +64,7 @@
     <div class="checkout-modal" id="checkoutModal">
         <div class="modal-content">
             <h2 style="margin-top:0; color: var(--primary);">Complete Your Order</h2>
-            <p id="modal-summary" style="font-weight: 600; color: #555; background: #f3e5f5; padding: 10px; border-radius: 6px;"></p>
+            <p id="modal-summary" style="font-weight: 600; color: #555; background: #f3e5f5; padding: 10px; border-radius: 6px; display: none;"></p>
             <div class="form-group">
                 <label>Your Name</label>
                 <input type="text" id="custName" placeholder="e.g. Abdullah Al-Salem" required>
@@ -78,14 +78,12 @@
                 <input type="text" id="custAddress" placeholder="Area, Block, Street, House/Apt" required>
             </div>
             <button class="submit-order" onclick="submitOrder()">Confirm Order</button>
-            <button style="width:100%; background:none; border:none; margin-top:15px; color:#888; font-weight:bold; cursor:pointer;" onclick="closeCheckout()">Cancel</button>
+            <button style="width:100%; background:none; border:none; margin-top:15px; color:#888; font-weight:bold; cursor:pointer;" onclick="toggleCart()">Cancel</button>
         </div>
     </div>
 
     <script>
-       // 🚀 NEW: We start with an empty array and load it from MongoDB instead!
-// 🚀 SAFE FIX: We start with an empty array for database items
-let products = [];
+        let products = [];
         let cart = [];
 
         // 1. Fetch products live from your database function
@@ -204,6 +202,9 @@ let products = [];
                 if (response.ok) {
                     alert("Order placed successfully! Check your MongoDB database.");
                     cart = [];
+                    document.getElementById('custName').value = '';
+                    document.getElementById('custPhone').value = '';
+                    document.getElementById('custAddress').value = '';
                     document.getElementById('cart-total').innerText = "0.00";
                     toggleCart(); // Close modal
                 } else {
@@ -216,21 +217,29 @@ let products = [];
         }
 
         // UI Helpers
-function toggleCart() {
-            // This searches your HTML for elements ending with "-modal" automatically
-            const modal = document.getElementById('checkout-modal') || 
-                          document.getElementById('cart-modal') || 
-                          document.querySelector('[id*="modal"]');
+        function toggleCart() {
+            // Target the exact ID from your HTML layout
+            const modal = document.getElementById('checkoutModal');
             
             if (!modal) {
-                console.error("Critical UI Error: Could not find your cart/checkout modal element in the HTML.");
-                alert("Could not open checkout drawer. Check the element IDs.");
+                console.error("Critical UI Error: Could not find checkoutModal element.");
                 return;
             }
             
-            // Toggle view state safely
-            modal.style.display = (modal.style.display === 'flex' || modal.style.display === 'block') ? 'none' : 'flex';
+            // Update order summary text if cart has items
+            const summary = document.getElementById('modal-summary');
+            if (summary && cart.length > 0) {
+                summary.style.display = 'block';
+                summary.innerText = `You are ordering ${cart.length} item(s).`;
+            } else if (summary) {
+                summary.style.display = 'none';
+            }
+            
+            // Toggle view state accurately matching CSS flex rules
+            const currentDisplay = window.getComputedStyle(modal).display;
+            modal.style.display = (currentDisplay === 'flex') ? 'none' : 'flex';
         }
+
         // Initialize store by fetching live database collection items
         fetchLiveProducts();
     </script>
