@@ -132,36 +132,45 @@
 
         function closeCheckout() { document.getElementById('checkoutModal').style.display = 'none'; }
 
-        function submitOrder() {
-            const custName = document.getElementById('custName').value;
-            const custPhone = document.getElementById('custPhone').value;
-            const custAddress = document.getElementById('custAddress').value;
+async function submitOrder() {
+    const custName = document.getElementById('custName').value;
+    const custPhone = document.getElementById('custPhone').value;
+    const custAddress = document.getElementById('custAddress').value;
 
-            if(!custName || !custPhone || !custAddress) return alert("Please fill out all delivery details.");
+    if(!custName || !custPhone || !custAddress) return alert("Please fill out all delivery details.");
 
-            const newOrder = {
-                _id: 'LR-' + Math.floor(100000 + Math.random() * 900000),
-                customerName: custName,
-                phone: custPhone,
-                address: custAddress,
-                items: cart,
-                total: cart.reduce((sum, p) => sum + p.price, 0),
-                status: 'Pending'
-            };
+    // Structure the order exactly how your system expects it
+    const newOrder = {
+        customerName: custName,
+        phone: custPhone,
+        address: custAddress,
+        items: cart,
+        total: cart.reduce((sum, p) => sum + p.price, 0)
+    };
 
-            // Using the new LocalRoot storage key
-            let savedOrders = JSON.parse(localStorage.getItem('localRoot_orders')) || [];
-            savedOrders.unshift(newOrder);
-            localStorage.setItem('localRoot_orders', JSON.stringify(savedOrders));
+    try {
+        // Send the data directly to your new live database function
+        const response = await fetch('/.netlify/functions/placeOrder', {
+            method: 'POST',
+            body: JSON.stringify(newOrder)
+        });
 
-            alert("Order placed successfully! Check the LocalRoot Admin Dashboard.");
+        if (response.ok) {
+            alert("Order placed successfully! Check your MongoDB database.");
             cart = [];
             document.getElementById('cart-total').innerText = "0.00";
             document.getElementById('custName').value = '';
             document.getElementById('custPhone').value = '';
             document.getElementById('custAddress').value = '';
             closeCheckout();
+        } else {
+            alert("There was a problem saving your order. Please try again.");
         }
+    } catch (error) {
+        console.error("Error connecting to server:", error);
+        alert("Failed to connect to the cloud database server.");
+    }
+}
 
         // Initialize store
         displayProducts(products);
