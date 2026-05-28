@@ -84,10 +84,11 @@
 
     <script>
        // 🚀 NEW: We start with an empty array and load it from MongoDB instead!
+// 🚀 SAFE FIX: We start with an empty array for database items
         let products = [];
         let cart = [];
 
-        // 🚀 NEW: Fetch products live from your database function
+        // Fetch products live from your database function
         async function fetchLiveProducts() {
             const container = document.getElementById('products-container');
             container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888; font-weight: bold;">Loading fresh harvest from database...</div>`;
@@ -110,7 +111,7 @@
             }
         }
 
-        // Updated function to display the items
+        // Display items using the MongoDB unique string ID
         function displayProducts(items) {
             const container = document.getElementById('products-container');
             container.innerHTML = items.map(p => `
@@ -123,15 +124,38 @@
             `).join('');
         }
 
-        // Updated function to safely handle database ID matching
-        function addToCart(id) {
-            const prod = products.find(p => p._id === id);
-            if (!prod) return;
-            cart.push(prod);
-            const total = cart.reduce((sum, p) => sum + p.price, 0);
-            document.getElementById('cart-total').innerText = total.toFixed(2);
+        // Robust category filtering that won't wipe out or lose your database items
+        function filterCat(category) {
+            // Safely toggle the active style button class
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            if (window.event && window.event.target) {
+                window.event.target.classList.add('active');
+            }
+            
+            if (category === 'all') {
+                displayProducts(products);
+            } else {
+                const filtered = products.filter(p => p.cat === category);
+                displayProducts(filtered);
+            }
         }
 
+        // Updated cart addition that guarantees it checks against valid data
+        function addToCart(id) {
+            const prod = products.find(p => p._id === id);
+            
+            // Safety Check: If it can't find it, stop immediately instead of crashing
+            if (!prod) {
+                console.error("Could not find product matching ID:", id);
+                return;
+            }
+            
+            cart.push(prod);
+            
+            // Calculate the total safely
+            const total = cart.reduce((sum, p) => sum + (p.price || 0), 0);
+            document.getElementById('cart-total').innerText = total.toFixed(2);
+        }
         function filterCat(category) {
             document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
