@@ -25,11 +25,12 @@
     <div class="admin-header">
         <h2>LocalRoot Orders Board</h2>
         <div>
-            <button class="refresh-btn" onclick="loadOrders()">Refresh Live Data</button>
+            <button class="refresh-btn" onclick="loadOrders(); loadInventory();">Refresh Live Data</button>
             <button class="clear-btn" onclick="clearOrders()">Clear All Orders</button>
         </div>
     </div>
-<div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 500px;">
+
+    <div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 500px;">
         <h3 style="margin-top: 0; color: #6A1B9A;">Add New Product to Storefront</h3>
         <div style="display: flex; flex-direction: column; gap: 12px;" id="productForm">
             <div>
@@ -57,6 +58,25 @@
             <button onclick="createNewProduct()" style="background:#6A1B9A; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px; transition:0.2s;">Save Product to Live Database</button>
         </div>
     </div>
+
+    <div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        <h3 style="margin-top: 0; color: #6A1B9A;">Manage Live Products</h3>
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background: #F8F3FA; color: #4A148C; border-bottom: 2px solid #e1bee7;">
+                    <th style="padding: 12px;">Image</th>
+                    <th style="padding: 12px;">Product Name</th>
+                    <th style="padding: 12px;">Category</th>
+                    <th style="padding: 12px;">Current Price</th>
+                    <th style="padding: 12px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="inventory-table-body">
+                <tr><td colspan="5" style="text-align:center; padding:20px; color:#888;">Loading inventory...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
     <table>
         <thead>
             <tr>
@@ -70,13 +90,11 @@
             </tr>
         </thead>
         <tbody id="admin-table-body">
-            </tbody>
+        </tbody>
     </table>
 
     <script>
-        // Function to inject dummy data so the board isn't empty on first load
-        // 🚀 NEW: Fetch real live orders from your MongoDB database via Netlify
-        // 🚀 NEW: Send form data to addProduct backend function
+        // 🚀 Add New Product
         async function createNewProduct() {
             const name = document.getElementById('pName').value;
             const price = parseFloat(document.getElementById('pPrice').value);
@@ -97,64 +115,10 @@
 
                 if (response.ok) {
                     alert("Product added successfully to your cloud database!");
-                    // Clear out the form inputs
                     document.getElementById('pName').value = '';
                     document.getElementById('pPrice').value = '';
                     document.getElementById('pImg').value = '';
+                    loadInventory(); // Refresh inventory right after adding!
                 } else {
                     alert("Failed to save the product. Try again.");
                 }
-            } catch (error) {
-                console.error("Error creating product:", error);
-                alert("Could not connect to the product database server.");
-            }
-        }
-        async function loadOrders() {
-            const tbody = document.getElementById('admin-table-body');
-            
-            try {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: #888;">Fetching live orders from MongoDB...</td></tr>`;
-                
-                const response = await fetch('/.netlify/functions/getOrders');
-                if (!response.ok) throw new Error("Failed to pull database records");
-                
-                const orders = await response.json();
-                
-                if (orders.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: #888;">No orders currently in the system.</td></tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = orders.map(order => {
-                    const itemNames = order.items.map(i => i.name).join(' • ');
-                    const statusClass = order.status === 'Delivered' ? 'status-Delivered' : 'status-Pending';
-                    
-                    // Generate a readable date or fall back to an ID string
-                    const orderId = order._id ? order._id.toString().substring(18, 24).toUpperCase() : 'LR-' + Math.floor(1000 + Math.random() * 9000);
-                    
-                    return `<tr>
-                        <td style="font-family: monospace; font-size: 13px; color: #6A1B9A; font-weight: bold;">${orderId}</td>
-                        <td style="font-weight:600; color: #333;">${order.customerName}</td>
-                        <td>${order.phone}</td>
-                        <td style="font-size: 14px; color: #555;">${order.address}</td>
-                        <td style="font-size: 13px; line-height: 1.4;">${itemNames}</td>
-                        <td style="font-weight:800; color:#4A148C;">KWD ${order.total.toFixed(2)}</td>
-                        <td><span class="${statusClass}">${order.status || 'Pending'}</span></td>
-                    </tr>`;
-                }).join('');
-            } catch (error) {
-                console.error("Error loading dashboard data:", error);
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: red; font-weight: bold;">Error loading live data from server.</td></tr>`;
-            }
-        }
-
-        // We don't need clearOrders for local storage anymore since MongoDB holds the data permanently!
-        function clearOrders() {
-            alert("To delete live orders safely, manage them securely inside your MongoDB Atlas Data Explorer dashboard!");
-        }
-
-        // Run automatically when the dashboard opens
-        loadOrders();
-    </script>
-</body>
-</html>
