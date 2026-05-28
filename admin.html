@@ -129,6 +129,7 @@
         }
 
         // 🚀 Load Orders
+// 🚀 Load Orders (Updated with Status Toggle Button)
         async function loadOrders() {
             const tbody = document.getElementById('admin-table-body');
             
@@ -147,18 +148,24 @@
 
                 tbody.innerHTML = orders.map(order => {
                     const itemNames = order.items.map(i => i.name).join(' • ');
-                    const statusClass = order.status === 'Delivered' ? 'status-Delivered' : 'status-Pending';
+                    const currentStatus = order.status || 'Pending';
+                    const statusClass = currentStatus === 'Delivered' ? 'status-Delivered' : 'status-Pending';
+                    const nextStatus = currentStatus === 'Delivered' ? 'Pending' : 'Delivered';
                     
-                    const orderId = order._id ? order._id.toString().substring(18, 24).toUpperCase() : 'LR-' + Math.floor(1000 + Math.random() * 9000);
+                    const displayId = order._id ? order._id.toString().substring(18, 24).toUpperCase() : 'LR-000';
+                    const realId = (order._id && order._id.$oid) ? order._id.$oid : order._id;
                     
                     return `<tr>
-                        <td style="font-family: monospace; font-size: 13px; color: #6A1B9A; font-weight: bold;">${orderId}</td>
+                        <td style="font-family: monospace; font-size: 13px; color: #6A1B9A; font-weight: bold;">${displayId}</td>
                         <td style="font-weight:600; color: #333;">${order.customerName}</td>
                         <td>${order.phone}</td>
                         <td style="font-size: 14px; color: #555;">${order.address}</td>
                         <td style="font-size: 13px; line-height: 1.4;">${itemNames}</td>
                         <td style="font-weight:800; color:#4A148C;">KWD ${order.total.toFixed(2)}</td>
-                        <td><span class="${statusClass}">${order.status || 'Pending'}</span></td>
+                        <td>
+                            <span class="${statusClass}" style="display:block; text-align:center; margin-bottom:5px;">${currentStatus}</span>
+                            <button onclick="updateOrderStatus('${realId}', '${nextStatus}')" style="width:100%; font-size:11px; padding:4px; cursor:pointer; border:1px solid #ccc; border-radius:4px; background:white;">Mark ${nextStatus}</button>
+                        </td>
                     </tr>`;
                 }).join('');
             } catch (error) {
@@ -167,6 +174,22 @@
             }
         }
 
+        // 🚀 NEW: Update Order Status Function
+        async function updateOrderStatus(id, newStatus) {
+            try {
+                const res = await fetch('/.netlify/functions/updateOrderStatus', {
+                    method: 'POST',
+                    body: JSON.stringify({ id, status: newStatus })
+                });
+                if (res.ok) {
+                    loadOrders(); // Refresh table immediately to show new status
+                } else {
+                    alert("Failed to update status.");
+                }
+            } catch (error) {
+                alert("Network error updating status.");
+            }
+        }
         // 🚀 Load Inventory Items
         async function loadInventory() {
             const tbody = document.getElementById('inventory-table-body');
