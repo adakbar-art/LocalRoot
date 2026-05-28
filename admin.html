@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LocalRoot - Admin Panel</title>
+    <style>
+        /* Matching Purple Branding */
+        body { font-family: -apple-system, sans-serif; background: #f4f6f8; margin: 0; padding: 30px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        h2 { margin: 0; color: #6A1B9A; font-weight: 800; letter-spacing: -0.5px; }
+        .refresh-btn { background: #6A1B9A; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .refresh-btn:hover { background: #4A148C; }
+        .clear-btn { background: #e53935; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-left: 10px; transition: 0.2s; }
+        .clear-btn:hover { background: #b71c1c; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        th, td { padding: 16px; text-align: left; border-bottom: 1px solid #eeeeee; }
+        th { background: #4A148C; color: white; font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; }
+        tr:hover { background-color: #fcf8fd; }
+        .status-Pending { background: #fff3e0; color: #f57c00; padding: 6px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; text-transform: uppercase; }
+        .status-Delivered { background: #e8f5e9; color: #2e7d32; padding: 6px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-header">
+        <h2>LocalRoot Orders Board</h2>
+        <div>
+            <button class="refresh-btn" onclick="loadOrders()">Refresh Live Data</button>
+            <button class="clear-btn" onclick="clearOrders()">Clear All Orders</button>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Customer Name</th>
+                <th>Phone Number</th>
+                <th>Delivery Address</th>
+                <th>Items Ordered</th>
+                <th>Revenue</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="admin-table-body">
+            </tbody>
+    </table>
+
+    <script>
+        // Function to inject dummy data so the board isn't empty on first load
+        function injectSampleOrders() {
+            if (!localStorage.getItem('localRoot_initialized')) {
+                const sampleOrders = [
+                    {
+                        _id: 'LR-998123',
+                        customerName: 'Fahad',
+                        phone: '+965 99887766',
+                        address: 'Mishref, Block 4, Street 12, House 5',
+                        items: [{name: 'Kuwaiti Tomatoes (1kg)'}, {name: 'Fresh Local Cucumber (1kg)'}],
+                        total: 2.75,
+                        status: 'Pending'
+                    },
+                    {
+                        _id: 'LR-443091',
+                        customerName: 'Sarah ',
+                        phone: '+965 55443322',
+                        address: 'Salmiya, Block 2, Salem Al Mubarak St, Apt 14',
+                        items: [{name: 'Natural Honey (250g)'}, {name: 'Fresh Figs Box'}],
+                        total: 7.00,
+                        status: 'Delivered'
+                    }
+                ];
+                localStorage.setItem('localRoot_orders', JSON.stringify(sampleOrders));
+                localStorage.setItem('localRoot_initialized', 'true');
+            }
+        }
+
+        function loadOrders() {
+            const savedData = localStorage.getItem('localRoot_orders');
+            const orders = savedData ? JSON.parse(savedData) : [];
+            const tbody = document.getElementById('admin-table-body');
+            
+            if (orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: #888;">No orders currently in the system.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = orders.map(order => {
+                const itemNames = order.items.map(i => i.name).join(' • ');
+                // Dynamic class assignment based on status for different colored badges
+                const statusClass = order.status === 'Delivered' ? 'status-Delivered' : 'status-Pending';
+                
+                return `<tr>
+                    <td style="font-family: monospace; font-size: 13px; color: #6A1B9A; font-weight: bold;">${order._id}</td>
+                    <td style="font-weight:600; color: #333;">${order.customerName}</td>
+                    <td>${order.phone}</td>
+                    <td style="font-size: 14px; color: #555;">${order.address}</td>
+                    <td style="font-size: 13px; line-height: 1.4;">${itemNames}</td>
+                    <td style="font-weight:800; color:#4A148C;">KWD ${order.total.toFixed(2)}</td>
+                    <td><span class="${statusClass}">${order.status}</span></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function clearOrders() {
+            if(confirm("Are you sure you want to delete all orders from the system?")) {
+                localStorage.removeItem('localRoot_orders');
+                localStorage.removeItem('localRoot_initialized'); // Resets so samples come back if refreshed
+                loadOrders();
+            }
+        }
+
+        // Run on startup
+        injectSampleOrders();
+        loadOrders();
+    </script>
+</body>
+</html>
