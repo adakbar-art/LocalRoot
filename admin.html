@@ -29,7 +29,34 @@
             <button class="clear-btn" onclick="clearOrders()">Clear All Orders</button>
         </div>
     </div>
-
+<div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 500px;">
+        <h3 style="margin-top: 0; color: #6A1B9A;">Add New Product to Storefront</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;" id="productForm">
+            <div>
+                <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Product Name</label>
+                <input type="text" id="pName" placeholder="e.g. Fresh Strawberries Box" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Price (KWD)</label>
+                    <input type="number" step="0.01" id="pPrice" placeholder="e.g. 2.50" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Category</label>
+                    <select id="pCat" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box; background:white;">
+                        <option value="Vegetables">Vegetables</option>
+                        <option value="Fruits">Fruits</option>
+                        <option value="Pantry">Pantry & Jars</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Image URL</label>
+                <input type="text" id="pImg" placeholder="https://images.unsplash.com/..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+            </div>
+            <button onclick="createNewProduct()" style="background:#6A1B9A; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px; transition:0.2s;">Save Product to Live Database</button>
+        </div>
+    </div>
     <table>
         <thead>
             <tr>
@@ -49,6 +76,39 @@
     <script>
         // Function to inject dummy data so the board isn't empty on first load
         // 🚀 NEW: Fetch real live orders from your MongoDB database via Netlify
+        // 🚀 NEW: Send form data to addProduct backend function
+        async function createNewProduct() {
+            const name = document.getElementById('pName').value;
+            const price = parseFloat(document.getElementById('pPrice').value);
+            const cat = document.getElementById('pCat').value;
+            const img = document.getElementById('pImg').value || "https://images.unsplash.com/photo-1610348725531-843dff563e2c?auto=format&fit=crop&w=400&q=80";
+
+            if (!name || isNaN(price)) {
+                return alert("Please fill out at least the Product Name and Price.");
+            }
+
+            const productData = { name, price, cat, img };
+
+            try {
+                const response = await fetch('/.netlify/functions/addProduct', {
+                    method: 'POST',
+                    body: JSON.stringify(productData)
+                });
+
+                if (response.ok) {
+                    alert("Product added successfully to your cloud database!");
+                    // Clear out the form inputs
+                    document.getElementById('pName').value = '';
+                    document.getElementById('pPrice').value = '';
+                    document.getElementById('pImg').value = '';
+                } else {
+                    alert("Failed to save the product. Try again.");
+                }
+            } catch (error) {
+                console.error("Error creating product:", error);
+                alert("Could not connect to the product database server.");
+            }
+        }
         async function loadOrders() {
             const tbody = document.getElementById('admin-table-body');
             
