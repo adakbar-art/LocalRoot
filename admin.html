@@ -48,70 +48,52 @@
 
     <script>
         // Function to inject dummy data so the board isn't empty on first load
-        function injectSampleOrders() {
-            if (!localStorage.getItem('localRoot_initialized')) {
-                const sampleOrders = [
-                    {
-                        _id: 'LR-998123',
-                        customerName: 'Fahad',
-                        phone: '+965 99887766',
-                        address: 'Mishref, Block 4, Street 12, House 5',
-                        items: [{name: 'Kuwaiti Tomatoes (1kg)'}, {name: 'Fresh Local Cucumber (1kg)'}],
-                        total: 2.75,
-                        status: 'Pending'
-                    },
-                    {
-                        _id: 'LR-443091',
-                        customerName: 'Sarah ',
-                        phone: '+965 55443322',
-                        address: 'Salmiya, Block 2, Salem Al Mubarak St, Apt 14',
-                        items: [{name: 'Natural Honey (250g)'}, {name: 'Fresh Figs Box'}],
-                        total: 7.00,
-                        status: 'Delivered'
-                    }
-                ];
-                localStorage.setItem('localRoot_orders', JSON.stringify(sampleOrders));
-                localStorage.setItem('localRoot_initialized', 'true');
-            }
-        }
-
-        function loadOrders() {
-            const savedData = localStorage.getItem('localRoot_orders');
-            const orders = savedData ? JSON.parse(savedData) : [];
+        // 🚀 NEW: Fetch real live orders from your MongoDB database via Netlify
+        async function loadOrders() {
             const tbody = document.getElementById('admin-table-body');
             
-            if (orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: #888;">No orders currently in the system.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = orders.map(order => {
-                const itemNames = order.items.map(i => i.name).join(' • ');
-                // Dynamic class assignment based on status for different colored badges
-                const statusClass = order.status === 'Delivered' ? 'status-Delivered' : 'status-Pending';
+            try {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: #888;">Fetching live orders from MongoDB...</td></tr>`;
                 
-                return `<tr>
-                    <td style="font-family: monospace; font-size: 13px; color: #6A1B9A; font-weight: bold;">${order._id}</td>
-                    <td style="font-weight:600; color: #333;">${order.customerName}</td>
-                    <td>${order.phone}</td>
-                    <td style="font-size: 14px; color: #555;">${order.address}</td>
-                    <td style="font-size: 13px; line-height: 1.4;">${itemNames}</td>
-                    <td style="font-weight:800; color:#4A148C;">KWD ${order.total.toFixed(2)}</td>
-                    <td><span class="${statusClass}">${order.status}</span></td>
-                </tr>`;
-            }).join('');
-        }
+                const response = await fetch('/.netlify/functions/getOrders');
+                if (!response.ok) throw new Error("Failed to pull database records");
+                
+                const orders = await response.json();
+                
+                if (orders.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: #888;">No orders currently in the system.</td></tr>`;
+                    return;
+                }
 
-        function clearOrders() {
-            if(confirm("Are you sure you want to delete all orders from the system?")) {
-                localStorage.removeItem('localRoot_orders');
-                localStorage.removeItem('localRoot_initialized'); // Resets so samples come back if refreshed
-                loadOrders();
+                tbody.innerHTML = orders.map(order => {
+                    const itemNames = order.items.map(i => i.name).join(' • ');
+                    const statusClass = order.status === 'Delivered' ? 'status-Delivered' : 'status-Pending';
+                    
+                    // Generate a readable date or fall back to an ID string
+                    const orderId = order._id ? order._id.toString().substring(18, 24).toUpperCase() : 'LR-' + Math.floor(1000 + Math.random() * 9000);
+                    
+                    return `<tr>
+                        <td style="font-family: monospace; font-size: 13px; color: #6A1B9A; font-weight: bold;">${orderId}</td>
+                        <td style="font-weight:600; color: #333;">${order.customerName}</td>
+                        <td>${order.phone}</td>
+                        <td style="font-size: 14px; color: #555;">${order.address}</td>
+                        <td style="font-size: 13px; line-height: 1.4;">${itemNames}</td>
+                        <td style="font-weight:800; color:#4A148C;">KWD ${order.total.toFixed(2)}</td>
+                        <td><span class="${statusClass}">${order.status || 'Pending'}</span></td>
+                    </tr>`;
+                }).join('');
+            } catch (error) {
+                console.error("Error loading dashboard data:", error);
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: red; font-weight: bold;">Error loading live data from server.</td></tr>`;
             }
         }
 
-        // Run on startup
-        injectSampleOrders();
+        // We don't need clearOrders for local storage anymore since MongoDB holds the data permanently!
+        function clearOrders() {
+            alert("To delete live orders safely, manage them securely inside your MongoDB Atlas Data Explorer dashboard!");
+        }
+
+        // Run automatically when the dashboard opens
         loadOrders();
     </script>
 </body>
