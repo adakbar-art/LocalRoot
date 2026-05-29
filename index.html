@@ -140,6 +140,7 @@
         }
 
         // 🔠 Apply Language and Layout
+        // 🔠 Apply Language and Layout
         function setLanguage(lang) {
             localStorage.setItem('localRootLang', lang);
             
@@ -159,10 +160,15 @@
                 }
             });
 
-            // Update dynamically generated buttons if products are loaded
-            document.querySelectorAll('.add-btn').forEach(btn => {
-                btn.innerText = dict[lang].addToCartBtn;
-            });
+            // 🔄 Instantly refresh the product grid so the names swap without reloading!
+            if (typeof products !== 'undefined' && products.length > 0) {
+                const activeBtn = document.querySelector('.cat-btn.active');
+                if (activeBtn) {
+                    activeBtn.click(); 
+                } else {
+                    displayProducts(products);
+                }
+            }
         }
 
         let products = [];
@@ -201,16 +207,19 @@
             return p._id || '';
         }
 
-        function displayProducts(items) {
+function displayProducts(items) {
             const container = document.getElementById('products-container');
             const currentLang = localStorage.getItem('localRootLang') || 'en';
             
             container.innerHTML = items.map(p => {
                 const pId = getProductId(p);
+                // 🌐 Choose the right name based on the language toggle
+                const displayName = (currentLang === 'ar' && p.nameAr) ? p.nameAr : p.name;
+                
                 return `
                     <div class="product-card">
-                        <img src="${p.img}" class="product-img" alt="${p.name}">
-                        <div class="product-title">${p.name}</div>
+                        <img src="${p.img}" class="product-img" alt="${displayName}">
+                        <div class="product-title">${displayName}</div>
                         <div class="product-price">KWD ${Number(p.price).toFixed(2)}</div>
                         <button class="add-btn" onclick="addToCart('${pId}')">${dict[currentLang].addToCartBtn}</button>
                     </div>
@@ -296,7 +305,7 @@
             }
         }
 
-        function toggleCart() {
+function toggleCart() {
             const modal = document.getElementById('checkoutModal');
             if (!modal) return;
             
@@ -306,12 +315,15 @@
             if (summary && cart.length > 0) {
                 summary.style.display = 'block';
                 
-                const itemListHTML = cart.map(item => `
+                // 🌐 Translate items inside the cart
+                const itemListHTML = cart.map(item => {
+                    const displayName = (currentLang === 'ar' && item.nameAr) ? item.nameAr : item.name;
+                    return `
                     <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 6px 0; color: #333;">
-                        <span>${item.name}</span>
+                        <span>${displayName}</span>
                         <span style="font-weight: bold; color: #6A1B9A;">KWD ${Number(item.price).toFixed(2)}</span>
                     </div>
-                `).join('');
+                `}).join('');
                 
                 const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0).toFixed(2);
                 

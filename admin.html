@@ -42,11 +42,19 @@
 
         <div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 500px;">
             <h3 style="margin-top: 0; color: #6A1B9A;">Add New Product to Storefront</h3>
-            <div style="display: flex; flex-direction: column; gap: 12px;" id="productForm">
-                <div>
-                    <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Product Name</label>
-                    <input type="text" id="pName" placeholder="e.g. Fresh Strawberries Box" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+<div style="display: flex; flex-direction: column; gap: 12px;" id="productForm">
+                
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Product Name (English)</label>
+                        <input type="text" id="pName" placeholder="e.g. Fresh Strawberries" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Product Name (Arabic)</label>
+                        <input type="text" id="pNameAr" placeholder="e.g. فراولة طازجة" dir="rtl" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+                    </div>
                 </div>
+
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
                         <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Price (KWD)</label>
@@ -61,13 +69,14 @@
                         </select>
                     </div>
                 </div>
+
                 <div>
-                    <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Image URL</label>
-                    <input type="text" id="pImg" placeholder="https://images.unsplash.com/..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+                    <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Upload Product Image</label>
+                    <input type="file" id="pImgFile" accept="image/*" style="width:100%; padding:10px; border:1px dashed #6A1B9A; border-radius:6px; box-sizing:border-box; background: #fdfbfd;">
                 </div>
-                <button onclick="createNewProduct()" style="background:#6A1B9A; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px; transition:0.2s;">Save Product to Live Database</button>
+
+                <button id="saveProductBtn" onclick="createNewProduct()" style="background:#6A1B9A; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px; transition:0.2s;">Save Product to Live Database</button>
             </div>
-        </div>
 
         <div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
             <h3 style="margin-top: 0; color: #6A1B9A;">Manage Live Products</h3>
@@ -130,35 +139,84 @@
         }
         // 🚀 Add New Product
         async function createNewProduct() {
-            const name = document.getElementById('pName').value;
-            const price = parseFloat(document.getElementById('pPrice').value);
+            const btn = document.getElementById('saveProductBtn');
+            const nameEn = document.getElementById('pName').value;
+            const nameAr = document.getElementById('pNameAr').value;
+            const price = document.getElementById('pPrice').value;
             const cat = document.getElementById('pCat').value;
-            const img = document.getElementById('pImg').value || "https://images.unsplash.com/photo-1610348725531-843dff563e2c?auto=format&fit=crop&w=400&q=80";
+            const fileInput = document.getElementById('pImgFile');
 
-            if (!name || isNaN(price)) {
-                return alert("Please fill out at least the Product Name and Price.");
+            // 1. Validation
+            if (!nameEn || !nameAr || !price || !cat || fileInput.files.length === 0) {
+                return alert("Please fill out all fields and select an image!");
             }
 
-            const productData = { name, price, cat, img };
+            // Disable button so we don't accidentally click it twice
+            btn.innerText = "⏳ Uploading Image...";
+            btn.disabled = true;
+            btn.style.opacity = "0.7";
 
             try {
-                const response = await fetch('/.netlify/functions/addProduct', {
+                // 2. Upload the Image to ImgBB
+                const file = fileInput.files[0];
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                const IMGBB_KEY = "a9f7bc23ac7ea0444075a41ab80977b2"; // <-- Paste your key here!
+                
+                const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
                     method: 'POST',
+                    body: formData
+                });
+                
+                const imgbbData = await imgbbResponse.json();
+                
+                if (!imgbbData.success) {
+    throw new Error("ImgBB says: " + (imgbbData.error ? imgbbData.error.message : "Unknown error"));
+}
+                
+                const imageUrl = imgbbData.data.url; // We successfully got the live URL back!
+
+                // 3. Save to MongoDB via your Netlify function
+                btn.innerText = "💾 Saving to Database...";
+                
+                const productData = {
+                    name: nameEn,     // English name
+                    nameAr: nameAr,   // Arabic name
+                    price: Number(price),
+                    cat: cat,
+                    img: imageUrl     // The shiny new ImgBB URL
+                };
+
+                const dbResponse = await fetch('/.netlify/functions/addProduct', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(productData)
                 });
 
-                if (response.ok) {
-                    alert("Product added successfully to your cloud database!");
+                if (dbResponse.ok) {
+                    alert("✅ Product Added Successfully!");
+                    
+                    // Clear the form
                     document.getElementById('pName').value = '';
+                    document.getElementById('pNameAr').value = '';
                     document.getElementById('pPrice').value = '';
-                    document.getElementById('pImg').value = '';
-                    loadInventory(); // Refresh inventory right after adding!
+                    document.getElementById('pImgFile').value = '';
+                    
+                    // Refresh the live inventory tables
+                    loadInventory(); 
                 } else {
-                    alert("Failed to save the product. Try again.");
+                    alert("Error saving to database. Check console.");
                 }
+
             } catch (error) {
-                console.error("Error creating product:", error);
-                alert("Could not connect to the product database server.");
+                console.error("Upload/Save Error:", error);
+                alert("Something went wrong! " + error.message);
+            } finally {
+                // Reset the button
+                btn.innerText = "Save Product to Live Database";
+                btn.disabled = false;
+                btn.style.opacity = "1";
             }
         }
 
