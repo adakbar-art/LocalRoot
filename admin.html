@@ -222,6 +222,7 @@
 
         // 🚀 Load Orders
 // 🚀 Load Orders (Updated with Status Toggle Button)
+        // 🚀 Load Orders (Updated with Real Order IDs)
         async function loadOrders() {
             const tbody = document.getElementById('admin-table-body');
             
@@ -244,7 +245,9 @@
                     const statusClass = currentStatus === 'Delivered' ? 'status-Delivered' : 'status-Pending';
                     const nextStatus = currentStatus === 'Delivered' ? 'Pending' : 'Delivered';
                     
-                    const displayId = order._id ? order._id.toString().substring(18, 24).toUpperCase() : 'LR-000';
+                    // 🔢 NEW: Grab the real Order ID we generated. 
+                    // (We kept a backup logic just in case you have older test orders without this field)
+                    const displayId = order.orderId || (order._id ? "OLD-" + order._id.toString().substring(18, 24).toUpperCase() : 'LR-000');
                     const realId = (order._id && order._id.$oid) ? order._id.$oid : order._id;
                     
                     return `<tr>
@@ -265,7 +268,6 @@
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: red; font-weight: bold;">Error loading live data from server.</td></tr>`;
             }
         }
-
         // 🚀 NEW: Update Order Status Function
         async function updateOrderStatus(id, newStatus) {
             try {
