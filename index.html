@@ -40,53 +40,138 @@
     <header>
         <div class="logo">LocalRoot</div>
         <div class="nav-right">
-            <span style="color: var(--primary); font-weight: bold; cursor: pointer;">عربي</span>
-            <button class="cart-btn" onclick="toggleCart()">Cart: KWD <span id="cart-total">0.00</span></button>
+            <span onclick="toggleLanguage()" data-i18n="langToggle" style="color: var(--primary); font-weight: bold; cursor: pointer;">عربي</span>
+            
+            <button class="cart-btn" onclick="toggleCart()">
+                <span data-i18n="cartBtnTxt">Cart</span>: KWD <span id="cart-total">0.00</span>
+            </button>
         </div>
     </header>
 
     <div class="hero">
         <div>
-            <h1 style="margin:0; font-size: 36px; letter-spacing: 1px;">Rooted in Kuwait</h1>
-            <p style="margin: 10px 0 0; font-size: 18px; font-weight: 500;">Fresh everyday from our farms to your table</p>
+            <h1 data-i18n="heroTitle" style="margin:0; font-size: 36px; letter-spacing: 1px;">Rooted in Kuwait</h1>
+            <p data-i18n="heroSub" style="margin: 10px 0 0; font-size: 18px; font-weight: 500;">Fresh everyday from our farms to your table</p>
         </div>
     </div>
 
     <div class="categories">
-        <button class="cat-btn active" onclick="filterCat('all')">All Harvest</button>
-        <button class="cat-btn" onclick="filterCat('Vegetables')">Vegetables</button>
-        <button class="cat-btn" onclick="filterCat('Fruits')">Fruits</button>
-        <button class="cat-btn" onclick="filterCat('Pantry')">Pantry & Jars</button>
+        <button class="cat-btn active" onclick="filterCat('all')" data-i18n="catAll">All Harvest</button>
+        <button class="cat-btn" onclick="filterCat('Vegetables')" data-i18n="catVeg">Vegetables</button>
+        <button class="cat-btn" onclick="filterCat('Fruits')" data-i18n="catFruit">Fruits</button>
+        <button class="cat-btn" onclick="filterCat('Pantry')" data-i18n="catPantry">Pantry & Jars</button>
     </div>
 
     <div class="products-grid" id="products-container"></div>
 
     <div class="checkout-modal" id="checkoutModal">
         <div class="modal-content">
-            <h2 style="margin-top:0; color: var(--primary);">Complete Your Order</h2>
+            <h2 data-i18n="modalTitle" style="margin-top:0; color: var(--primary);">Complete Your Order</h2>
             <div id="modal-summary" style="background: #f3e5f5; padding: 15px; border-radius: 6px; display: none; margin-bottom: 15px; font-size: 14px; max-height: 180px; overflow-y: auto;"></div>
+            
             <div class="form-group">
-                <label>Your Name</label>
-                <input type="text" id="custName" placeholder="e.g. Abdullah Al-Salem" required>
+                <label data-i18n="lblName">Your Name</label>
+                <input type="text" id="custName" data-i18n="phName" placeholder="e.g. Abdullah Al-Salem" required>
             </div>
             <div class="form-group">
-                <label>Phone Number</label>
-                <input type="text" id="custPhone" placeholder="e.g. +965 90001234" required>
+                <label data-i18n="lblPhone">Phone Number</label>
+                <input type="text" id="custPhone" data-i18n="phPhone" placeholder="e.g. +965 90001234" required>
             </div>
             <div class="form-group">
-                <label>Delivery Address</label>
-                <input type="text" id="custAddress" placeholder="Area, Block, Street, House/Apt" required>
+                <label data-i18n="lblAddress">Delivery Address</label>
+                <input type="text" id="custAddress" data-i18n="phAddress" placeholder="Area, Block, Street, House/Apt" required>
             </div>
-            <button class="submit-order" onclick="submitOrder()">Confirm Order</button>
-            <button style="width:100%; background:none; border:none; margin-top:15px; color:#888; font-weight:bold; cursor:pointer;" onclick="toggleCart()">Cancel</button>
+            <button class="submit-order" onclick="submitOrder()" data-i18n="confirmBtn">Confirm Order</button>
+            <button data-i18n="cancelBtn" style="width:100%; background:none; border:none; margin-top:15px; color:#888; font-weight:bold; cursor:pointer;" onclick="toggleCart()">Cancel</button>
         </div>
     </div>
 
     <script>
+        // 🌐 Language Dictionary
+        const dict = {
+            en: {
+                langToggle: "عربي",          
+                cartBtnTxt: "Cart",          
+                heroTitle: "Rooted in Kuwait",
+                heroSub: "Fresh everyday from our farms to your table",
+                catAll: "All Harvest",
+                catVeg: "Vegetables",
+                catFruit: "Fruits",
+                catPantry: "Pantry & Jars",
+                modalTitle: "Complete Your Order",
+                lblName: "Your Name",
+                lblPhone: "Phone Number",
+                lblAddress: "Delivery Address",
+                confirmBtn: "Confirm Order",
+                cancelBtn: "Cancel",
+                phName: "e.g. Abdullah Al-Salem",
+                phPhone: "e.g. +965 90001234",
+                phAddress: "Area, Block, Street, House/Apt",
+                orderTotal: "Order Total:",
+                addToCartBtn: "Add to Cart"
+            },
+            ar: {
+                langToggle: "English",       
+                cartBtnTxt: "السلة",          
+                heroTitle: "متجذرون في الكويت",
+                heroSub: "طازج يومياً من مزارعنا إلى مائدتك",
+                catAll: "كل المحاصيل",
+                catVeg: "خضراوات",
+                catFruit: "فواكه",
+                catPantry: "المخزن والبرطمانات",
+                modalTitle: "أكمل طلبك",
+                lblName: "الاسم",
+                lblPhone: "رقم الهاتف",
+                lblAddress: "عنوان التوصيل",
+                confirmBtn: "تأكيد الطلب",
+                cancelBtn: "إلغاء",
+                phName: "مثال: عبدالله السالم",
+                phPhone: "مثال: +965 90001234",
+                phAddress: "المنطقة، القطعة، الشارع، المنزل/الشقة",
+                orderTotal: "إجمالي الطلب:",
+                addToCartBtn: "أضف للسلة"
+            }
+        };
+
+        // 🔄 Toggle Function
+        function toggleLanguage() {
+            const currentLang = localStorage.getItem('localRootLang') === 'ar' ? 'en' : 'ar';
+            setLanguage(currentLang);
+        }
+
+        // 🔠 Apply Language and Layout
+        function setLanguage(lang) {
+            localStorage.setItem('localRootLang', lang);
+            
+            // Flip the website layout
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            document.documentElement.lang = lang;
+
+            // Swap text tags
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (dict[lang][key]) {
+                    if (element.tagName === 'INPUT') {
+                        element.placeholder = dict[lang][key];
+                    } else {
+                        element.innerText = dict[lang][key];
+                    }
+                }
+            });
+
+            // Update dynamically generated buttons if products are loaded
+            document.querySelectorAll('.add-btn').forEach(btn => {
+                btn.innerText = dict[lang].addToCartBtn;
+            });
+        }
+
         let products = [];
         let cart = JSON.parse(localStorage.getItem('localRootCart')) || [];
 
-        // 1. Fetch products live from your database function
+        // 🚀 Load saved language immediately on startup so it doesn't flash English
+        const savedLang = localStorage.getItem('localRootLang') || 'en';
+        setLanguage(savedLang);
+
         async function fetchLiveProducts() {
             const container = document.getElementById('products-container');
             container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888; font-weight: bold;">Loading fresh harvest from database...</div>`;
@@ -109,7 +194,6 @@
             }
         }
 
-        // 2. Safely extract the ID string whether it's a flat string or a nested MongoDB $oid object
         function getProductId(p) {
             if (!p) return '';
             if (typeof p._id === 'object' && p._id.$oid) return p._id.$oid;
@@ -117,9 +201,10 @@
             return p._id || '';
         }
 
-        // 3. Display items using the extracted string ID
         function displayProducts(items) {
             const container = document.getElementById('products-container');
+            const currentLang = localStorage.getItem('localRootLang') || 'en';
+            
             container.innerHTML = items.map(p => {
                 const pId = getProductId(p);
                 return `
@@ -127,13 +212,12 @@
                         <img src="${p.img}" class="product-img" alt="${p.name}">
                         <div class="product-title">${p.name}</div>
                         <div class="product-price">KWD ${Number(p.price).toFixed(2)}</div>
-                        <button class="add-btn" onclick="addToCart('${pId}')">Add to Cart</button>
+                        <button class="add-btn" onclick="addToCart('${pId}')">${dict[currentLang].addToCartBtn}</button>
                     </div>
                 `;
             }).join('');
         }
 
-        // 4. Category filtering
         function filterCat(category) {
             document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
             if (window.event && window.event.target) {
@@ -148,27 +232,21 @@
             }
         }
 
-        // 5. Airtight cart addition matching against both string format variants
         function addToCart(id) {
-            console.log("Attempting to add product with ID:", id);
-            
             const prod = products.find(p => getProductId(p) === id);
             
             if (!prod) {
-                console.error("Critical: Could not find product matching ID:", id, "Available products:", products);
-                alert("Error adding item to cart. Check browser console logs.");
+                alert("Error adding item to cart.");
                 return;
             }
             
             cart.push(prod);
             localStorage.setItem('localRootCart', JSON.stringify(cart));
             
-            // Calculate total safely forcing numbers
             const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
             document.getElementById('cart-total').innerText = total.toFixed(2);
         }
 
-        // 6. Checkout flow passing items to order payload
         async function submitOrder() {
             const name = document.getElementById('custName').value;
             const phone = document.getElementById('custPhone').value;
@@ -208,7 +286,7 @@
                     document.getElementById('custPhone').value = '';
                     document.getElementById('custAddress').value = '';
                     document.getElementById('cart-total').innerText = "0.00";
-                    toggleCart(); // Close modal
+                    toggleCart(); 
                 } else {
                     alert("Failed to submit order. Try again.");
                 }
@@ -218,20 +296,16 @@
             }
         }
 
-        // UI Helpers
         function toggleCart() {
             const modal = document.getElementById('checkoutModal');
-            
-            if (!modal) {
-                console.error("Critical UI Error: Could not find checkoutModal element.");
-                return;
-            }
+            if (!modal) return;
             
             const summary = document.getElementById('modal-summary');
+            const currentLang = localStorage.getItem('localRootLang') || 'en';
+
             if (summary && cart.length > 0) {
                 summary.style.display = 'block';
                 
-                // Build the itemized list row by row
                 const itemListHTML = cart.map(item => `
                     <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 6px 0; color: #333;">
                         <span>${item.name}</span>
@@ -241,11 +315,10 @@
                 
                 const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0).toFixed(2);
                 
-                // Inject it into the modal
                 summary.innerHTML = `
                     <div style="margin-bottom: 10px;">${itemListHTML}</div>
                     <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: #4A148C; border-top: 2px solid #6A1B9A; padding-top: 10px;">
-                        <span>Order Total:</span>
+                        <span>${dict[currentLang].orderTotal}</span>
                         <span>KWD ${total}</span>
                     </div>
                 `;
@@ -257,7 +330,6 @@
             modal.style.display = (currentDisplay === 'flex') ? 'none' : 'flex';
         }
 
-        // Initialize store by fetching live database collection items
         fetchLiveProducts();
 
         if (cart.length > 0) {
