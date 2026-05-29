@@ -22,78 +22,112 @@
 </head>
 <body>
 
-    <div class="admin-header">
-        <h2>LocalRoot Orders Board</h2>
-        <div>
-            <button class="refresh-btn" onclick="loadOrders(); loadInventory();">Refresh Live Data</button>
-            <button class="clear-btn" onclick="clearOrders()">Clear All Orders</button>
+    <div id="login-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f6f8; display: flex; justify-content: center; align-items: center; z-index: 9999;">
+        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; max-width: 300px; width: 100%;">
+            <h2 style="color: #6A1B9A; margin-top: 0;">Admin Access</h2>
+            <input type="password" id="admin-pass" placeholder="Enter PIN" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; width: 100%; box-sizing: border-box; text-align: center; font-size: 16px;">
+            <button onclick="checkPassword()" style="background: #6A1B9A; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.2s;">Unlock Dashboard</button>
         </div>
     </div>
 
-    <div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 500px;">
-        <h3 style="margin-top: 0; color: #6A1B9A;">Add New Product to Storefront</h3>
-        <div style="display: flex; flex-direction: column; gap: 12px;" id="productForm">
-            <div>
-                <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Product Name</label>
-                <input type="text" id="pName" placeholder="e.g. Fresh Strawberries Box" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Price (KWD)</label>
-                    <input type="number" step="0.01" id="pPrice" placeholder="e.g. 2.50" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
-                </div>
-                <div style="flex: 1;">
-                    <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Category</label>
-                    <select id="pCat" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box; background:white;">
-                        <option value="Vegetables">Vegetables</option>
-                        <option value="Fruits">Fruits</option>
-                        <option value="Pantry">Pantry & Jars</option>
-                    </select>
-                </div>
-            </div>
-            <div>
-                <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Image URL</label>
-                <input type="text" id="pImg" placeholder="https://images.unsplash.com/..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
-            </div>
-            <button onclick="createNewProduct()" style="background:#6A1B9A; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px; transition:0.2s;">Save Product to Live Database</button>
-        </div>
-    </div>
+    <div id="admin-content" style="display: none;">
 
-    <div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-        <h3 style="margin-top: 0; color: #6A1B9A;">Manage Live Products</h3>
-        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <div class="admin-header">
+            <h2>LocalRoot Orders Board</h2>
+            <div>
+                <button class="refresh-btn" onclick="loadOrders(); loadInventory();">Refresh Live Data</button>
+                <button class="clear-btn" onclick="clearOrders()">Clear All Orders</button>
+            </div>
+        </div>
+
+        <div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 500px;">
+            <h3 style="margin-top: 0; color: #6A1B9A;">Add New Product to Storefront</h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;" id="productForm">
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Product Name</label>
+                    <input type="text" id="pName" placeholder="e.g. Fresh Strawberries Box" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Price (KWD)</label>
+                        <input type="number" step="0.01" id="pPrice" placeholder="e.g. 2.50" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Category</label>
+                        <select id="pCat" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box; background:white;">
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Pantry">Pantry & Jars</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label style="display:block; font-weight:600; margin-bottom:4px; font-size:14px; color:#4A148C;">Image URL</label>
+                    <input type="text" id="pImg" placeholder="https://images.unsplash.com/..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+                </div>
+                <button onclick="createNewProduct()" style="background:#6A1B9A; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px; transition:0.2s;">Save Product to Live Database</button>
+            </div>
+        </div>
+
+        <div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <h3 style="margin-top: 0; color: #6A1B9A;">Manage Live Products</h3>
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background: #F8F3FA; color: #4A148C; border-bottom: 2px solid #e1bee7;">
+                        <th style="padding: 12px;">Image</th>
+                        <th style="padding: 12px;">Product Name</th>
+                        <th style="padding: 12px;">Category</th>
+                        <th style="padding: 12px;">Current Price</th>
+                        <th style="padding: 12px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-table-body">
+                    <tr><td colspan="5" style="text-align:center; padding:20px; color:#888;">Loading inventory...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <table>
             <thead>
-                <tr style="background: #F8F3FA; color: #4A148C; border-bottom: 2px solid #e1bee7;">
-                    <th style="padding: 12px;">Image</th>
-                    <th style="padding: 12px;">Product Name</th>
-                    <th style="padding: 12px;">Category</th>
-                    <th style="padding: 12px;">Current Price</th>
-                    <th style="padding: 12px;">Actions</th>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer Name</th>
+                    <th>Phone Number</th>
+                    <th>Delivery Address</th>
+                    <th>Items Ordered</th>
+                    <th>Revenue</th>
+                    <th>Status</th>
                 </tr>
             </thead>
-            <tbody id="inventory-table-body">
-                <tr><td colspan="5" style="text-align:center; padding:20px; color:#888;">Loading inventory...</td></tr>
+            <tbody id="admin-table-body">
             </tbody>
         </table>
-    </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Order ID</th>
-                <th>Customer Name</th>
-                <th>Phone Number</th>
-                <th>Delivery Address</th>
-                <th>Items Ordered</th>
-                <th>Revenue</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody id="admin-table-body">
-        </tbody>
-    </table>
+    </div> 
+
+
 
     <script>
+        // 🔒 Password Protection Logic
+        const SECRET_PIN = "6662"; // <-- Change this to whatever PIN you want!
+
+        // Check if they already logged in during this session
+        if (sessionStorage.getItem('localRootAdmin') === 'unlocked') {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+        }
+
+        function checkPassword() {
+            const input = document.getElementById('admin-pass').value;
+            if (input === SECRET_PIN) {
+                sessionStorage.setItem('localRootAdmin', 'unlocked');
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+            } else {
+                alert("Incorrect PIN. Access Denied.");
+                document.getElementById('admin-pass').value = '';
+            }
+        }
         // 🚀 Add New Product
         async function createNewProduct() {
             const name = document.getElementById('pName').value;

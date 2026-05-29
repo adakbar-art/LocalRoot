@@ -84,7 +84,7 @@
 
     <script>
         let products = [];
-        let cart = [];
+        let cart = JSON.parse(localStorage.getItem('localRootCart')) || [];
 
         // 1. Fetch products live from your database function
         async function fetchLiveProducts() {
@@ -161,6 +161,7 @@
             }
             
             cart.push(prod);
+            localStorage.setItem('localRootCart', JSON.stringify(cart));
             
             // Calculate total safely forcing numbers
             const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
@@ -202,6 +203,7 @@
                 if (response.ok) {
                     alert("Order placed successfully! Check your MongoDB database.");
                     cart = [];
+                    localStorage.removeItem('localRootCart');
                     document.getElementById('custName').value = '';
                     document.getElementById('custPhone').value = '';
                     document.getElementById('custAddress').value = '';
@@ -257,6 +259,11 @@
 
         // Initialize store by fetching live database collection items
         fetchLiveProducts();
+
+        if (cart.length > 0) {
+            const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
+            document.getElementById('cart-total').innerText = total.toFixed(2);
+        }
     </script>
 </body>
 </html>
