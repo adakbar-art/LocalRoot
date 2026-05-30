@@ -73,7 +73,13 @@
 <body>
 
     <header>
+        <div style="display: flex; align-items: center; gap: 8px;">
+        
+        <img src="logo1.png" alt="LocalRoot Logo" style="height: 35px; width: auto;">
+
         <div class="logo" data-i18n="logoText">LocalRoot</div>
+        
+    </div>
         <div class="nav-right">
             
             <a href="#contact" data-i18n="navContact" style="color: var(--primary); text-decoration: none; font-weight: 600; font-size: 11px;">Contact</a>
@@ -181,6 +187,10 @@
         <span style="font-size: 16px; margin-right: 5px;">🛒</span> 
         <span id="toast-msg">Added to cart!</span>
     </div>
+    <footer style="background: var(--dark); color: white; text-align: center; padding: 40px 5%; margin-top: 20px;">
+        <div style="font-size: 24px; font-weight: 800; margin-bottom: 10px; color: #e1bee7;" data-i18n="logoText">LocalRoot</div>
+        <div style="font-size: 14px; color: #d1c4e9; opacity: 0.8;" data-i18n="footerText">© 2026 LocalRoot Kuwait. All rights reserved.</div>
+    </footer>
     <script>
         // 🌐 Language Dictionary
         const dict = {
@@ -223,6 +233,7 @@
                 trustDelivery: "Next-Day Delivery",
                 trustSupport: "WhatsApp Support",
                 emptyCartMsg: "Your basket is empty! Let's pick some fresh produce.",
+                footerText: "© 2026 LocalRoot Kuwait. All rights reserved.",
             },
             ar: {
                 langToggle: "English",       
@@ -263,6 +274,7 @@
                 trustDelivery: "توصيل في اليوم التالي",
                 trustSupport: "دعم عبر الواتساب",
                 emptyCartMsg: "سلتك فارغة! دعنا نختار بعض المنتجات الطازجة.",
+                footerText: "© 2026 لوكال روت الكويت. جميع الحقوق محفوظة."
             }
         };
 
