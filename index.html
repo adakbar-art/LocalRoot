@@ -33,15 +33,50 @@
         .form-group input:focus { outline: none; border-color: var(--primary); }
         .submit-order { width: 100%; background: var(--primary); color: white; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .submit-order:hover { background: var(--dark); }
+        /* 🛡️ Trust Banner */
+        .trust-banner { display: flex; justify-content: center; gap: 40px; background: white; padding: 12px 5%; border-bottom: 1px solid #f3e5f5; font-size: 14px; font-weight: 600; color: #555; flex-wrap: wrap; text-align: center; }
+        .trust-item { display: flex; align-items: center; gap: 8px; }
+        /* 📱 Mobile Header Spacing */
+        @media (max-width: 600px) {
+            header { gap: 15px; flex-wrap: wrap; }
+            .nav-right { gap: 12px; }
+            .logo { font-size: 22px; }
+            .trust-banner { gap: 15px; font-size: 12px; justify-content: space-around; }
+        }
+        /* 🍞 Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 220px;
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+            border-radius: 30px;
+            padding: 14px 20px;
+            position: fixed;
+            z-index: 3000;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%);
+            font-size: 15px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(106, 27, 154, 0.4);
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 40px; /* Slides up slightly */
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">LocalRoot</div>
+        <div class="logo" data-i18n="logoText">LocalRoot</div>
         <div class="nav-right">
             
-            <a href="#contact" data-i18n="navContact" style="color: var(--primary); text-decoration: none; font-weight: 600;">Contact</a>
+            <a href="#contact" data-i18n="navContact" style="color: var(--primary); text-decoration: none; font-weight: 600; font-size: 11px;">Contact</a>
             
             <span onclick="toggleLanguage()" data-i18n="langToggle" style="color: var(--primary); font-weight: bold; cursor: pointer;">عربي</span>
             
@@ -57,7 +92,15 @@
             <p data-i18n="heroSub" style="margin: 10px 0 0; font-size: 18px; font-weight: 500;">Fresh everyday from our farms to your table</p>
         </div>
     </div>
+<div class="trust-banner">
+        <div class="trust-item">
+            <span>🚜</span> <span data-i18n="trustFresh">Fresh from Abdali</span>
+        </div>
+        <div class="trust-item">
+            <span>🚚</span> <span data-i18n="trustDelivery">Next-Day Delivery</span>
+        </div>
 
+    </div>
     <div class="categories">
         <button class="cat-btn active" onclick="filterCat('all')" data-i18n="catAll">All Harvest</button>
         <button class="cat-btn" onclick="filterCat('Vegetables')" data-i18n="catVeg">Vegetables</button>
@@ -95,23 +138,25 @@
             <h2 data-i18n="modalTitle" style="margin-top:0; color: var(--primary);">Complete Your Order</h2>
             <div id="modal-summary" style="background: #f3e5f5; padding: 15px; border-radius: 6px; display: none; margin-bottom: 15px; font-size: 14px; max-height: 180px; overflow-y: auto;"></div>
             
-            <div class="form-group">
-                <label data-i18n="lblName">Your Name</label>
-                <input type="text" id="custName" data-i18n="phName" placeholder="e.g. Abdullah Al-Salem" required>
+            <div id="checkout-form">
+                <div class="form-group">
+                    <label data-i18n="lblName">Your Name</label>
+                    <input type="text" id="custName" data-i18n="phName" placeholder="e.g. Abdullah Al-Salem" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="lblPhone">Phone Number</label>
+                    <input type="text" id="custPhone" data-i18n="phPhone" placeholder="e.g. +965 90001234" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="lblAddress">Delivery Address</label>
+                    <input type="text" id="custAddress" data-i18n="phAddress" placeholder="Area, Block, Street, House/Apt" required>
+                </div>
+                <button class="submit-order" onclick="submitOrder()" data-i18n="confirmBtn">Confirm Order</button>
             </div>
-            <div class="form-group">
-                <label data-i18n="lblPhone">Phone Number</label>
-                <input type="text" id="custPhone" data-i18n="phPhone" placeholder="e.g. +965 90001234" required>
-            </div>
-            <div class="form-group">
-                <label data-i18n="lblAddress">Delivery Address</label>
-                <input type="text" id="custAddress" data-i18n="phAddress" placeholder="Area, Block, Street, House/Apt" required>
-            </div>
-            <button class="submit-order" onclick="submitOrder()" data-i18n="confirmBtn">Confirm Order</button>
             
             <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button data-i18n="cancelBtn" style="flex: 1; background: #f4f6f8; border: none; padding: 12px; border-radius: 6px; color: #555; font-weight: bold; cursor: pointer; transition: 0.2s;" onclick="toggleCart()">Cancel</button>
-                <button data-i18n="clearCartBtn" style="flex: 1; background: #ffebee; border: none; padding: 12px; border-radius: 6px; color: #d32f2f; font-weight: bold; cursor: pointer; transition: 0.2s;" onclick="clearCart()">Clear Cart</button>
+                <button id="clearCartBtn" data-i18n="clearCartBtn" style="flex: 1; background: #ffebee; border: none; padding: 12px; border-radius: 6px; color: #d32f2f; font-weight: bold; cursor: pointer; transition: 0.2s;" onclick="clearCart()">Clear Cart</button>
             </div>
         </div>
     </div>
@@ -132,7 +177,10 @@
             <button data-i18n="closeBtn" onclick="closeSuccessModal()" style="background: var(--primary); color: white; border: none; padding: 12px 30px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(106, 27, 154, 0.2);">Close</button>
         </div>
     </div>
-    
+    <div id="toast">
+        <span style="font-size: 16px; margin-right: 5px;">🛒</span> 
+        <span id="toast-msg">Added to cart!</span>
+    </div>
     <script>
         // 🌐 Language Dictionary
         const dict = {
@@ -144,15 +192,15 @@
                 catAll: "All Harvest",
                 catVeg: "Vegetables",
                 catFruit: "Fruits",
-                catPantry: "Pantry & Jars",
+                catPantry: "Jars",
                 modalTitle: "Complete Your Order",
                 lblName: "Your Name",
                 lblPhone: "Phone Number",
                 lblAddress: "Delivery Address",
                 confirmBtn: "Confirm Order",
                 cancelBtn: "Cancel",
-                phName: "e.g. Abdullah Al-Salem",
-                phPhone: "e.g. +965 90001234",
+                phName: "e.g. Abdullah",
+                phPhone: "e.g. 90001234",
                 phAddress: "Area, Block, Street, House/Apt",
                 orderTotal: "Order Total:",
                 addToCartBtn: "Add to Cart",
@@ -168,7 +216,13 @@
                 successTitle: "Thank You!",
                 successMsg: "Thanks for ordering! We will prepare your order and contact you shortly.",
                 closeBtn: "Close",
-                orderRefLabel: "Order #:"
+                orderRefLabel: "Order #:",
+                logoText: "LocalRoot",
+                toastAdded: "Added to basket!",
+                trustFresh: "Fresh from Abdali",
+                trustDelivery: "Next-Day Delivery",
+                trustSupport: "WhatsApp Support",
+                emptyCartMsg: "Your basket is empty! Let's pick some fresh produce.",
             },
             ar: {
                 langToggle: "English",       
@@ -178,15 +232,15 @@
                 catAll: "كل المحاصيل",
                 catVeg: "خضراوات",
                 catFruit: "فواكه",
-                catPantry: "المخزن والبرطمانات",
+                catPantry: "منتجات اخرى",
                 modalTitle: "أكمل طلبك",
                 lblName: "الاسم",
                 lblPhone: "رقم الهاتف",
                 lblAddress: "عنوان التوصيل",
                 confirmBtn: "تأكيد الطلب",
                 cancelBtn: "إلغاء",
-                phName: "مثال: عبدالله السالم",
-                phPhone: "مثال: +965 90001234",
+                phName: "مثال: عبدالله ",
+                phPhone: "مثال:  90001234",
                 phAddress: "المنطقة، القطعة، الشارع، المنزل/الشقة",
                 orderTotal: "إجمالي الطلب:",
                 addToCartBtn: "أضف للسلة",
@@ -202,7 +256,13 @@
                 successTitle: "شكراً لك!",
                 successMsg: "شكراً لطلبك! سنقوم بتجهيز طلبك والتواصل معك قريباً.",
                 closeBtn: "إغلاق",
-                orderRefLabel: "رقم الطلب:"
+                orderRefLabel: "رقم الطلب:",
+                logoText: "لوكال رووت",
+                toastAdded: "تمت الإضافة للسلة!",
+                trustFresh: "طازج من العبدلي",
+                trustDelivery: "توصيل في اليوم التالي",
+                trustSupport: "دعم عبر الواتساب",
+                emptyCartMsg: "سلتك فارغة! دعنا نختار بعض المنتجات الطازجة.",
             }
         };
 
@@ -247,7 +307,7 @@
         let cart = JSON.parse(localStorage.getItem('localRootCart')) || [];
 
         // 🚀 Load saved language immediately on startup so it doesn't flash English
-        const savedLang = localStorage.getItem('localRootLang') || 'en';
+        const savedLang = localStorage.getItem('localRootLang') || 'ar';
         setLanguage(savedLang);
 
         async function fetchLiveProducts() {
@@ -326,6 +386,26 @@
             
             const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
             document.getElementById('cart-total').innerText = total.toFixed(2);
+
+            // 🍞 Trigger the Toast Animation
+            showToast();
+        }
+
+        // 🍞 The Toast Logic
+        function showToast() {
+            const toast = document.getElementById("toast");
+            const currentLang = localStorage.getItem('localRootLang') || 'en';
+            
+            // Set the correct translated text
+            document.getElementById("toast-msg").innerText = dict[currentLang].toastAdded;
+            
+            // Slide it up
+            toast.classList.add("show");
+            
+            // Hide it again after 2.5 seconds
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 2500);
         }
 
 async function submitOrder() {
@@ -391,32 +471,48 @@ async function submitOrder() {
             if (!modal) return;
             
             const summary = document.getElementById('modal-summary');
+            const form = document.getElementById('checkout-form');
+            const clearBtn = document.getElementById('clearCartBtn');
             const currentLang = localStorage.getItem('localRootLang') || 'en';
 
-            if (summary && cart.length > 0) {
-                summary.style.display = 'block';
+            if (summary) {
+                summary.style.display = 'block'; // Always show the summary box now
                 
-                // 🌐 Translate items inside the cart
-                const itemListHTML = cart.map(item => {
-                    const displayName = (currentLang === 'ar' && item.nameAr) ? item.nameAr : item.name;
-                    return `
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 6px 0; color: #333;">
-                        <span>${displayName}</span>
-                        <span style="font-weight: bold; color: #6A1B9A;">KWD ${Number(item.price).toFixed(2)}</span>
-                    </div>
-                `}).join('');
-                
-                const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0).toFixed(2);
-                
-                summary.innerHTML = `
-                    <div style="margin-bottom: 10px;">${itemListHTML}</div>
-                    <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: #4A148C; border-top: 2px solid #6A1B9A; padding-top: 10px;">
-                        <span>${dict[currentLang].orderTotal}</span>
-                        <span>KWD ${total}</span>
-                    </div>
-                `;
-            } else if (summary) {
-                summary.style.display = 'none';
+                if (cart.length > 0) {
+                    // ✅ Cart is full: Show the form and the Clear button
+                    if(form) form.style.display = 'block';
+                    if(clearBtn) clearBtn.style.display = 'block';
+                    
+                    const itemListHTML = cart.map(item => {
+                        const displayName = (currentLang === 'ar' && item.nameAr) ? item.nameAr : item.name;
+                        return `
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding: 6px 0; color: #333;">
+                            <span>${displayName}</span>
+                            <span style="font-weight: bold; color: #6A1B9A;">KWD ${Number(item.price).toFixed(2)}</span>
+                        </div>
+                    `}).join('');
+                    
+                    const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0).toFixed(2);
+                    
+                    summary.innerHTML = `
+                        <div style="margin-bottom: 10px;">${itemListHTML}</div>
+                        <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: #4A148C; border-top: 2px solid #6A1B9A; padding-top: 10px;">
+                            <span>${dict[currentLang].orderTotal}</span>
+                            <span>KWD ${total}</span>
+                        </div>
+                    `;
+                } else {
+                    // ❌ Cart is empty: Hide the form and show the friendly message
+                    if(form) form.style.display = 'none';
+                    if(clearBtn) clearBtn.style.display = 'none';
+                    
+                    summary.innerHTML = `
+                        <div style="text-align: center; padding: 20px 0; color: #6A1B9A;">
+                            <div style="font-size: 40px; margin-bottom: 10px;">🛒</div>
+                            <strong style="font-size: 16px;">${dict[currentLang].emptyCartMsg}</strong>
+                        </div>
+                    `;
+                }
             }
             
             const currentDisplay = window.getComputedStyle(modal).display;
@@ -448,6 +544,7 @@ async function submitOrder() {
             const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
             document.getElementById('cart-total').innerText = total.toFixed(2);
         }
+        
     </script>
 </body>
 </html>
