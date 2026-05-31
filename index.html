@@ -331,7 +331,8 @@
                 if (!response.ok) throw new Error("Failed to load products");
                 
                 products = await response.json();
-                
+                // ✨ NEW: Filter out any products that the admin has hidden!
+                products = products.filter(p => p.isActive !== false);
                 if (products.length === 0) {
                     container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;">No products found. Add some in the Admin Panel!</div>`;
                     return;
