@@ -134,7 +134,7 @@
             </div>
             <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); min-width: 200px;">
                 <h3 data-i18n="phoneLabel" style="margin-top:0; color: var(--dark); font-size: 18px;">WhatsApp</h3>
-                <p style="margin:0; font-weight:bold; color: var(--primary);">69022222</p>
+                <p style="margin:0; font-weight:bold; color: var(--primary);">98989550</p>
             </div>
         </div>
     </div>
@@ -152,6 +152,10 @@
                 <div class="form-group">
                     <label data-i18n="lblPhone">Phone Number</label>
                     <input type="text" id="custPhone" data-i18n="phPhone" placeholder="e.g. +965 90001234" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="lblEmail">Email Address</label>
+                    <input type="email" id="custEmail" placeholder="e.g. hello@example.com" required>
                 </div>
                 <div class="form-group">
                     <label data-i18n="lblAddress">Delivery Address</label>
@@ -234,6 +238,7 @@
                 trustSupport: "WhatsApp Support",
                 emptyCartMsg: "Your basket is empty! Let's pick some fresh produce.",
                 footerText: "© 2026 LocalRoot Kuwait. All rights reserved.",
+                lblEmail: "Email Address",
             },
             ar: {
                 langToggle: "English",       
@@ -274,7 +279,8 @@
                 trustDelivery: "توصيل في اليوم التالي",
                 trustSupport: "دعم عبر الواتساب",
                 emptyCartMsg: "سلتك فارغة! دعنا نختار بعض المنتجات الطازجة.",
-                footerText: "© 2026 لوكال روت الكويت. جميع الحقوق محفوظة."
+                footerText: "© 2026 لوكال روت الكويت. جميع الحقوق محفوظة.",
+                lblEmail: "البريد الإلكتروني",
             }
         };
 
@@ -424,6 +430,7 @@
 async function submitOrder() {
             const name = document.getElementById('custName').value;
             const phone = document.getElementById('custPhone').value;
+            const email = document.getElementById('custEmail').value; // ✨ NEW
             const address = document.getElementById('custAddress').value;
 
             if (!name || !phone || !address) {
@@ -453,6 +460,7 @@ async function submitOrder() {
                 orderTime: orderTime, // 🕒 NEW: Saving the time to the database
                 customerName: name,
                 phone: phone,
+                customerEmail: email, // ✨ NEW: Send to backend
                 address: address,
                 items: cart.map(p => ({ name: p.name, price: Number(p.price) })),
                 total: total,
