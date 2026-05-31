@@ -120,7 +120,7 @@
                 <thead>
                     <tr>
                         <th>Order ID</th>
-                        <th>Customer Name</th>
+                        <th>Date & Time</th><th>Customer Name</th>
                         <th>Phone Number</th>
                         <th>Delivery Address</th>
                         <th>Items Ordered</th>
@@ -280,9 +280,12 @@
                         `;
                     }
 
+               // 🕒 NEW: Handle older orders that might not have a time saved yet
+                    const displayTime = order.orderTime ? order.orderTime : "---";
+
                     return `<tr>
                         <td style="font-family: monospace; font-size: 13px; color: #6A1B9A; font-weight: bold;">${displayId}</td>
-                        <td style="font-weight:600; color: #333;">${order.customerName}</td>
+                        <td style="font-size: 12px; color: #555; font-weight: 600;">${displayTime}</td> <td style="font-weight:600; color: #333;">${order.customerName}</td>
                         <td>${order.phone}</td>
                         <td style="font-size: 14px; color: #555;">${order.address}</td>
                         <td style="font-size: 13px; line-height: 1.4;">${itemNames}</td>

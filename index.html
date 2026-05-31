@@ -130,7 +130,7 @@
         <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
             <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); min-width: 200px;">
                 <h3 data-i18n="emailLabel" style="margin-top:0; color: var(--dark); font-size: 18px;">Email</h3>
-                <p style="margin:0; font-weight:bold; color: var(--primary);">hello@localroot.farm</p>
+                <p style="margin:0; font-weight:bold; color: var(--primary);">hello@localroot.me</p>
             </div>
             <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); min-width: 200px;">
                 <h3 data-i18n="phoneLabel" style="margin-top:0; color: var(--dark); font-size: 18px;">WhatsApp</h3>
@@ -439,8 +439,17 @@ async function submitOrder() {
             const orderRef = "LR-" + Math.floor(100000 + Math.random() * 900000);
 
             // Added orderId to the database payload so you can see it in your admin panel!
+// 🕒 Capture the exact date and time
+            const now = new Date();
+            const orderTime = now.toLocaleString('en-US', { 
+                day: 'numeric', month: 'short', year: 'numeric', 
+                hour: '2-digit', minute: '2-digit' 
+            });
+
+            // Added orderId to the database payload so you can see it in your admin panel!
             const orderPayload = {
                 orderId: orderRef,
+                orderTime: orderTime, // 🕒 NEW: Saving the time to the database
                 customerName: name,
                 phone: phone,
                 address: address,
