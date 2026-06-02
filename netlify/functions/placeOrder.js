@@ -22,9 +22,10 @@ exports.handler = async (event, context) => {
 
         const result = await orders.insertOne(orderData);
 
-        // 📧 NEW: Send Branded Automated Email via Resend
+        // 📧 Send Emails via Resend
         try {
-            const emailHtml = `
+            // --- 1. EMAIL TO CUSTOMER ---
+            const customerEmailHtml = `
                 <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #e1bee7; border-radius: 8px; overflow: hidden;">
                     <div style="background: #6A1B9A; padding: 20px; text-align: center; color: white;">
                         <h1 style="margin: 0; font-size: 24px; letter-spacing: 1px;">LocalRoot Kuwait</h1>
@@ -42,7 +43,6 @@ exports.handler = async (event, context) => {
                 </div>
             `;
 
-            // Call the Resend API
             await fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: {
@@ -53,13 +53,41 @@ exports.handler = async (event, context) => {
                     from: 'LocalRoot <orders@localroot.me>', 
                     to: [orderData.customerEmail], 
                     subject: `Your LocalRoot Order: ${orderData.orderId}`,
-                    html: emailHtml
+                    html: customerEmailHtml
                 })
             });
-            console.log("Customer receipt email sent successfully!");
+
+            // --- 2. ALERT EMAIL TO YOU (ADMIN) ---
+            const adminEmailHtml = `
+                <div style="font-family: sans-serif; color: #111;">
+                    <h2 style="color: #d32f2f;">🚨 New Order Received!</h2>
+                    <p><strong>Customer:</strong> ${orderData.customerName}</p>
+                    <p><strong>Phone:</strong> ${orderData.phone}</p>
+                    <p><strong>Address:</strong> ${orderData.address}</p>
+                    <p><strong>Total:</strong> KWD ${Number(orderData.total).toFixed(2)}</p>
+                    <p><strong>Order Ref:</strong> ${orderData.orderId}</p>
+                    <hr>
+                    <p>Log in to your Admin Dashboard or MongoDB to see the full list of items they purchased.</p>
+                </div>
+            `;
+
+            await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    from: 'LocalRoot System <orders@localroot.me>', 
+                    to: ['adakbar@firstline.com.kw'], // <-- CHANGE THIS TO YOUR ACTUAL EMAIL
+                    subject: `🚨 New Order: KWD ${Number(orderData.total).toFixed(2)} from ${orderData.customerName}`,
+                    html: adminEmailHtml
+                })
+            });
+
+            console.log("Both customer and admin emails sent successfully!");
         } catch (emailError) {
             console.error("Email failed to send:", emailError);
-            // Notice we don't fail the whole order just because the email glitches
         }
 
         return {
