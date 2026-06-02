@@ -79,7 +79,7 @@ exports.handler = async (event, context) => {
                 },
                 body: JSON.stringify({
                     from: 'LocalRoot System <orders@localroot.me>', 
-                    to: ['adakbar@firstline.com.kw'], // <-- CHANGE THIS TO YOUR ACTUAL EMAIL
+                    to: ['adakbar@firstline.com.kw','a.akbar@firstline.com.kw','ali@firstline.com.kw','online@emarketkw.com'], // <-- CHANGE THIS TO YOUR ACTUAL EMAIL
                     subject: `🚨 New Order: KWD ${Number(orderData.total).toFixed(2)} from ${orderData.customerName}`,
                     html: adminEmailHtml
                 })
