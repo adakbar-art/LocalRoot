@@ -133,7 +133,20 @@
                 </tbody>
             </table>
         </div>
-
+<div style="margin-top: 40px; padding: 20px; background: #f4f4f4; border-radius: 8px;">
+        <h3 style="color: #6A1B9A;">📸 Upload to 'Meet the Farm' Gallery</h3>
+        <input type="file" id="imageUpload" accept="image/*" style="margin-bottom: 15px;">
+        <br>
+        <button onclick="uploadAndCompressImage()" style="background: #6A1B9A; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Upload Image</button>
+        <p id="uploadStatus" style="font-weight: bold; margin-top: 10px;"></p>
+    </div>
+    <!-- ✨ NEW: Manage Gallery Section -->
+    <div style="margin-top: 20px; padding: 20px; background: #fff; border: 1px solid #ddd; border-radius: 8px;">
+        <h3 style="color: #d32f2f; margin-top: 0;">🗑️ Manage Live Gallery</h3>
+        <div id="admin-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;">
+            <!-- Images and Delete buttons will load here -->
+        </div>
+    </div>
     </div> 
 
     <script>
@@ -457,6 +470,122 @@
         // Run automatically when the dashboard opens
         loadOrders();
         loadInventory();
+async function uploadAndCompressImage() {
+            const fileInput = document.getElementById('imageUpload');
+            const statusText = document.getElementById('uploadStatus');
+            const file = fileInput.files[0];
+            
+            if (!file) return alert("Please select an image first!");
+
+            statusText.innerText = "Compressing and uploading... please wait.";
+
+            // Magic Compression Logic
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function(event) {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = async function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // Shrink to a max width of 800px
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // Compress to WebP format at 70% quality (super tiny file size!)
+                    const compressedBase64 = canvas.toDataURL('image/webp', 0.7);
+
+                    // Send the tiny image to your new backend function
+                    try {
+                        const res = await fetch('/.netlify/functions/gallery', {
+                            method: 'POST',
+                            body: JSON.stringify({ imageData: compressedBase64 })
+                        });
+                        if(res.ok) {
+                            statusText.innerText = "✅ Uploaded successfully!";
+                            statusText.style.color = "green";
+                            fileInput.value = ""; // Clear the input
+                        }
+                    } catch(e) {
+                        statusText.innerText = "❌ Upload failed. Please try again.";
+                        statusText.style.color = "red";
+                    }
+                }
+            };
+        }
+      // Load images into the Admin panel
+        async function loadAdminGallery() {
+            try {
+                const res = await fetch('/.netlify/functions/gallery');
+                const images = await res.json();
+                const grid = document.getElementById('admin-gallery-grid');
+                grid.innerHTML = ''; // Clear the grid before reloading
+                
+                images.forEach(img => {
+                    const wrapper = document.createElement('div');
+                    wrapper.style.border = '1px solid #ccc';
+                    wrapper.style.borderRadius = '5px';
+                    wrapper.style.padding = '8px';
+                    wrapper.style.background = '#fafafa';
+                    
+                    const imgEl = document.createElement('img');
+                    imgEl.src = img.imageData;
+                    imgEl.style.width = '100%';
+                    imgEl.style.height = '100px';
+                    imgEl.style.objectFit = 'cover';
+                    imgEl.style.borderRadius = '3px';
+                    
+                    const delBtn = document.createElement('button');
+                    delBtn.innerText = '❌ Delete';
+                    delBtn.style.width = '100%';
+                    delBtn.style.marginTop = '8px';
+                    delBtn.style.background = '#d32f2f';
+                    delBtn.style.color = '#fff';
+                    delBtn.style.border = 'none';
+                    delBtn.style.padding = '6px';
+                    delBtn.style.borderRadius = '3px';
+                    delBtn.style.cursor = 'pointer';
+                    
+                    // Attach the specific image ID to the button
+                    delBtn.onclick = () => deleteImage(img._id);
+                    
+                    wrapper.appendChild(imgEl);
+                    wrapper.appendChild(delBtn);
+                    grid.appendChild(wrapper);
+                });
+            } catch (e) {
+                console.error("Could not load admin gallery");
+            }
+        }
+
+        // Delete the image when clicked
+        async function deleteImage(id) {
+            // Ask for confirmation so you don't accidentally click it!
+            if (!confirm("Are you sure you want to permanently delete this photo?")) return;
+            
+            try {
+                const res = await fetch('/.netlify/functions/gallery', {
+                    method: 'DELETE',
+                    body: JSON.stringify({ id: id })
+                });
+                
+                if (res.ok) {
+                    loadAdminGallery(); // Reload the grid to remove the deleted image instantly
+                } else {
+                    alert("Failed to delete image.");
+                }
+            } catch (e) {
+                alert("Error deleting image.");
+            }
+        }
+
+        // Load the gallery immediately when the admin page opens
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAdminGallery();
+        });  
     </script>
 </body>
 </html>

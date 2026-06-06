@@ -192,6 +192,15 @@
         <span style="font-size: 16px; margin-right: 5px;">🛒</span> 
         <span id="toast-msg">Added to cart!</span>
     </div>
+    <!-- ✨ NEW: Meet the Farm Gallery -->
+    <section id="meet-the-farm" style="padding: 60px 20px; text-align: center; background-color: #f8f3fa;">
+        <h2 style="color: #6A1B9A; font-size: 32px; margin-bottom: 10px;">Meet the Farm</h2>
+        <p style="color: #555; margin-bottom: 30px;">A behind-the-scenes look at where your food is grown</p>
+        
+        <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; max-width: 1000px; margin: auto;">
+            <!-- Your uploaded images will magically appear here -->
+        </div>
+    </section>
     <footer style="background: var(--dark); color: white; text-align: center; padding: 40px 5%; margin-top: 20px;">
         <div style="font-size: 24px; font-weight: 800; margin-bottom: 10px; color: #e1bee7;" data-i18n="logoText">LocalRoot</div>
         <div style="font-size: 14px; color: #d1c4e9; opacity: 0.8;" data-i18n="footerText">© 2026 LocalRoot Kuwait. All rights reserved.</div>
@@ -575,7 +584,29 @@ async function submitOrder() {
             const total = cart.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
             document.getElementById('cart-total').innerText = total.toFixed(2);
         }
-        
+    async function loadGallery() {
+            try {
+                const res = await fetch('/.netlify/functions/gallery');
+                const images = await res.json();
+                const grid = document.getElementById('gallery-grid');
+                
+                images.forEach(img => {
+                    const imgEl = document.createElement('img');
+                    imgEl.src = img.imageData;
+                    imgEl.style.width = '100%';
+                    imgEl.style.height = '250px';
+                    imgEl.style.objectFit = 'cover'; // Keeps images looking perfect
+                    imgEl.style.borderRadius = '8px';
+                    imgEl.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
+                    grid.appendChild(imgEl);
+                });
+            } catch (e) {
+                console.error("Could not load gallery");
+            }
+        }
+
+        // Call the function immediately when the site loads
+        loadGallery();    
     </script>
 </body>
 </html>
